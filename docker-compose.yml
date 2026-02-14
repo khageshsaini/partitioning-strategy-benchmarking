@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: bench
+      POSTGRES_PASSWORD: bench
+      POSTGRES_DB: bench
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    command: >
+      postgres
+        -c shared_buffers=2GB
+        -c work_mem=256MB
+        -c maintenance_work_mem=1GB
+        -c effective_cache_size=6GB
+        -c max_parallel_workers_per_gather=4
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: bench
+      MYSQL_USER: bench
+      MYSQL_PASSWORD: bench
+      MYSQL_DATABASE: bench
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: >
+      --innodb-buffer-pool-size=2G
+      --innodb-log-file-size=512M
+      --innodb-flush-log-at-trx-commit=2
+      --max-connections=200
+
+volumes:
+  pg_data:
+  mysql_data:
