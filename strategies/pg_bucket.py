@@ -6,8 +6,8 @@ import time
 from datetime import datetime, timezone
 from typing import Any
 
-import psycopg2
-import psycopg2.extras
+import psycopg
+from psycopg.rows import tuple_row
 
 from config import BenchmarkConfig
 from strategies.base import QueryResult, Strategy
@@ -33,12 +33,13 @@ class PgBucketStrategy(Strategy):
     # ------------------------------------------------------------------
 
     def connect(self, cfg: BenchmarkConfig) -> Any:
-        return psycopg2.connect(
+        return psycopg.connect(
             host=cfg.postgres.host,
             port=cfg.postgres.port,
             user=cfg.postgres.user,
             password=cfg.postgres.password,
             dbname=cfg.postgres.database,
+            row_factory=tuple_row,
         )
 
     def close(self, conn: Any) -> None:
@@ -85,12 +86,9 @@ class PgBucketStrategy(Strategy):
             for r in rows
         ]
         with conn.cursor() as cur:
-            psycopg2.extras.execute_values(
-                cur,
-                f"INSERT INTO {TABLE} (id, expiry, bucket) VALUES %s",
-                converted,
-                page_size=5000,
-            )
+            with cur.copy(f"COPY {TABLE} (id, expiry, bucket) FROM STDIN") as copy:
+                for row in converted:
+                    copy.write_row(row)
             conn.commit()
 
     # ------------------------------------------------------------------
