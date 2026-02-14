@@ -13,11 +13,11 @@ services:
       - pg_data:/var/lib/postgresql/data
     command: >
       postgres
-        -c shared_buffers=2GB
-        -c work_mem=256MB
-        -c maintenance_work_mem=1GB
-        -c effective_cache_size=6GB
-        -c max_parallel_workers_per_gather=4
+        -c shared_buffers=512MB
+        -c work_mem=128MB
+        -c maintenance_work_mem=512MB
+        -c effective_cache_size=2GB
+        -c max_parallel_workers_per_gather=2
 
   mysql:
     image: mysql:8.0
@@ -31,8 +31,8 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     command: >
-      --innodb-buffer-pool-size=2G
-      --innodb-log-file-size=512M
+      --innodb-buffer-pool-size=512M
+      --innodb-log-file-size=256M
       --innodb-flush-log-at-trx-commit=2
       --max-connections=200
 
